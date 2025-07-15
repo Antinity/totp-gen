@@ -156,4 +156,14 @@
             const code = authenticator.generate(secret);
             codeSpan.textContent = code;
           } catch (err) {
-            codeSpan.textContent = "In
+            codeSpan.textContent = "Invalid secret";
+          }
+        } else {
+          codeSpan.textContent = "------";
+        }
+      }
+
+      setInterval(update, 100);
+    </script>
+  </body>
+</html>
