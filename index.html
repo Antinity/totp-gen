@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>stab's Authenticator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/buffer.js"></script>
+    <script src="https://unpkg.com/@otplib/preset-browser@12.0.1/index.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: #0d1117;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+        gap: 1rem;
+      }
+
+      h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      input {
+        padding: 1rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+        outline: none;
+        width: 220px;
+      }
+
+      .submit-btn {
+        padding: 0 1rem;
+        font-size: 1.1rem;
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.05);
+        background-color: rgba(255, 255, 255, 0.05);
+        color: rgba(255,255,255,0.8);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.15s ease;
+      }
+
+      .submit-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      #code {
+        font-size: 2.5rem;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+      }
+
+      #countdown {
+        font-size: 0.9rem;
+        color: #8b949e;
+      }
+
+      #bar-container {
+        width: 240px;
+        height: 8px;
+        background: #30363d;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      #bar {
+        height: 100%;
+        width: 0%;
+        background: #238636;
+        transition: width 0.1s linear;
+      }
+
+      .blob {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 400px;
+        height: 400px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(82, 123, 149, 0.4));
+        filter: blur(200px);
+        pointer-events: none;
+        z-index: -1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="blob"></div>
+
+    <h2>
+  <span style="
+    background: linear-gradient(90deg, #ff80bf, #8fd3f4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 8px 0 8px rgba(255, 128, 191, 0.2), 0 0 12px rgba(143, 211, 244, 0.3);
+  ">stab</span>'s Authenticator
+</h2>
+
+
+    <div class="input-group">
+      <input type="text" id="secret" placeholder="Paste Code" />
+      <button id="activate" class="submit-btn">submit</button>
+    </div>
+
+    <div id="code">------</div>
+    <div id="countdown">Waiting for secret code...</div>
+    <div id="bar-container"><div id="bar"></div></div>
+
+    <script>
+      const input = document.getElementById("secret");
+      const activateBtn = document.getElementById("activate");
+      const codeSpan = document.getElementById("code");
+      const countdownSpan = document.getElementById("countdown");
+      const bar = document.getElementById("bar");
+
+      const authenticator = window.otplib.authenticator;
+      let secret = "";
+
+      activateBtn.addEventListener("click", () => {
+        secret = input.value.trim();
+      });
+
+      function update() {
+        const epoch = Math.floor(Date.now() / 1000);
+        const timeRemaining = 30 - (epoch % 30);
+
+        countdownSpan.textContent = `${timeRemaining}s left`;
+        bar.style.width = `${((30 - timeRemaining) / 30) * 100}%`;
+
+        if (secret) {
+          try {
+            const code = authenticator.generate(secret);
+            codeSpan.textContent = code;
+          } catch (err) {
+            codeSpan.textContent = "In
